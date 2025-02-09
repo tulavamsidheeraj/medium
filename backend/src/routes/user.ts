@@ -3,7 +3,7 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { Bindings } from "hono/types";
-import { signUpInput } from "../zod";
+
 
 export const userRouter=new Hono<{
 Bindings:{
@@ -18,13 +18,7 @@ userRouter.post('/signup',async (c) => {
 
 
   const body= await c.req.json()
-  const {success}=signUpInput.safeParse(body);
-  if(!success){
-    c.status(411);
-    return c.json({
-      message:"Incorrect inputs"
-    })
-  }
+  
   try{
     const user=await prisma.user.create({
       data:{
