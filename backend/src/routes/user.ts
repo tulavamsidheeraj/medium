@@ -3,11 +3,12 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { Bindings } from "hono/types";
+import { signUpInput } from "../zod";
 
 export const userRouter=new Hono<{
 Bindings:{
-    DATABASE_URL:string
-    JWT_SECRET:string
+    DATABASE_URL:string;
+    JWT_SECRET:string;
 }}>()
 
 userRouter.post('/signup',async (c) => {
@@ -17,6 +18,13 @@ userRouter.post('/signup',async (c) => {
 
 
   const body= await c.req.json()
+  const {success}=signUpInput.safeParse(body);
+  if(!success){
+    c.status(411);
+    return c.json({
+      message:"Incorrect inputs"
+    })
+  }
   try{
     const user=await prisma.user.create({
       data:{
@@ -55,7 +63,7 @@ userRouter.post('/signin',async (c) => {
         return c.json({msg:"Invalid credentials"})
       }
       const token=await sign({id:user.id},c.env.JWT_SECRET)
-      return c.json({jwt:token})
+      return c.json({token})
     }
     catch(e){
       return c.status(403)
