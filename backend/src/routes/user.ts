@@ -4,21 +4,21 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 import { Bindings } from "hono/types";
 
+
 export const userRouter=new Hono<{
 Bindings:{
-    DATABASE_URL:string
-    JWT_SECRET:string
+    DATABASE_URL:string;
+    JWT_SECRET:string;
 }}>()
 
 userRouter.post('/signup',async (c) => {
-  
-  
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate())
 
 
   const body= await c.req.json()
+  
   try{
     const user=await prisma.user.create({
       data:{
@@ -57,7 +57,7 @@ userRouter.post('/signin',async (c) => {
         return c.json({msg:"Invalid credentials"})
       }
       const token=await sign({id:user.id},c.env.JWT_SECRET)
-      return c.json({jwt:token})
+      return c.json({token})
     }
     catch(e){
       return c.status(403)
